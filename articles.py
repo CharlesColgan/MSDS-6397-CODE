@@ -14,6 +14,7 @@ from sklearn.datasets import fetch_20newsgroups
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn import svm
 from sklearn.pipeline import Pipeline
 
 #Load Data
@@ -65,17 +66,17 @@ for i in range(len(val_lab)):
         val_lab[i] = 3
 
 #Form Algo
-def Proc(train, labels, valid, valid_labels, dist = 20):
-    def knn_text(data, labels, valid, valid_labels, n = 5):                       
+def Proc_KNN(train, labels, valid, valid_labels, dist = 10):
+    def knn_text(train, labels, valid, valid_labels, n = 5):                       
         text_clf = Pipeline([
             ('vect', CountVectorizer()),
             ('tfidf', TfidfTransformer()),
-            ('clf', KNeighborsClassifier(n_neighbors = n)),
+            ('clf', KNeighborsClassifier(n_neighbors=n)),
         ])
         text_clf.fit(train, labels)
         predicted = text_clf.predict(valid)
         acc = np.mean(predicted == valid_labels)*100
-        return[predicted, acc]
+        return [predicted, acc]
     ACC = []   
     for n in range(1, dist):
         jim = knn_text(train, labels, valid, valid_labels, n)[1]
@@ -83,3 +84,27 @@ def Proc(train, labels, valid, valid_labels, dist = 20):
     kbest_pred = knn_text(train, labels, valid, valid_labels, ACC.index(max(ACC)) + 1)
     return kbest_pred
 
+def Proc_SVM(train, labels, valid, valid_labels, cost = 10):
+    def svm_text(train, labels, valid, valid_labels, n = 5):
+        text_clf = Pipeline([
+            ('vect', CountVectorizer()),
+            ('tfidf', TfidfTransformer()),
+            ('clf', svm.SVC(C = n)),
+        ])
+        text_clf.fit(train, labels)
+        predicted = text_clf.predict(valid)
+        acc = np.mean(predicted == valid_labels)*100
+        return [predicted, acc]
+    ACC = []
+    for n in range(1, cost):
+        jam = svm_text(train, labels, valid, valid_labels, n)[1]
+        ACC.append(jam)    
+    cbest_pred = svm_text(train, labels, valid, valid_labels, ACC.index(max(ACC)) + 1)
+    return cbest_pred   
+
+#Process data       
+J1 = Proc_KNN(dat_train, train_lab, dat_val, val_lab, 10)
+        
+J2 = Proc_SVM(dat_train, train_lab, dat_val, val_lab, 10)   
+        
+        
