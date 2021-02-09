@@ -65,20 +65,21 @@ for i in range(len(val_lab)):
         val_lab[i] = 3
 
 #Form Algo
-def Proc(data, labels, valid, valid_labels, dist = 20):
+def Proc(train, labels, valid, valid_labels, dist = 20):
     def knn_text(data, labels, valid, valid_labels, n = 5):                       
         text_clf = Pipeline([
             ('vect', CountVectorizer()),
             ('tfidf', TfidfTransformer()),
             ('clf', KNeighborsClassifier(n_neighbors = n)),
         ])
-        text_clf.fit(data, labels)
+        text_clf.fit(train, labels)
         predicted = text_clf.predict(valid)
         acc = np.mean(predicted == valid_labels)*100
         return[predicted, acc]
     ACC = []   
     for n in range(1, dist):
-        jim = knn_text(dat_train, train_lab, dat_val, val_lab, n)[1]
+        jim = knn_text(train, labels, valid, valid_labels, n)[1]
         ACC.append(jim)    
-    kbest_pred = knn_text(dat_train, train_lab, dat_val, val_lab, ACC.index(max(ACC)) + 1)
+    kbest_pred = knn_text(train, labels, valid, valid_labels, ACC.index(max(ACC)) + 1)
     return kbest_pred
+
