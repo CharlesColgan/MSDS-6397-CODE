@@ -16,6 +16,9 @@ from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn import svm
 from sklearn.pipeline import Pipeline
+from datetime import datetime
+
+start = datetime.now()
 
 #Load Data
 data_train = open("data_train.txt", "r")
@@ -66,45 +69,47 @@ for i in range(len(val_lab)):
         val_lab[i] = 3
 
 #Form Algo
-def Proc_KNN(train, labels, valid, valid_labels, dist = 10):
-    def knn_text(train, labels, valid, valid_labels, n = 5):                       
-        text_clf = Pipeline([
-            ('vect', CountVectorizer()),
-            ('tfidf', TfidfTransformer()),
-            ('clf', KNeighborsClassifier(n_neighbors=n)),
-        ])
-        text_clf.fit(train, labels)
-        predicted = text_clf.predict(valid)
-        acc = np.mean(predicted == valid_labels)*100
-        return [predicted, acc]
-    ACC = []   
-    for n in range(1, dist):
-        jim = knn_text(train, labels, valid, valid_labels, n)[1]
-        ACC.append(jim)    
-    kbest_pred = knn_text(train, labels, valid, valid_labels, ACC.index(max(ACC)) + 1)
-    return kbest_pred
+def knn_text(train, labels, valid, valid_labels, n = 5):                       
+    text_clf = Pipeline([
+        ('vect', CountVectorizer()),
+        ('tfidf', TfidfTransformer()),
+        ('clf', KNeighborsClassifier(n_neighbors=n)),
+    ])
+    text_clf.fit(train, labels)
+    predicted = text_clf.predict(valid)
+    acc = np.mean(predicted == valid_labels)*100
+    return [predicted, acc]
 
-def Proc_SVM(train, labels, valid, valid_labels, cost = 10):
-    def svm_text(train, labels, valid, valid_labels, n = 5):
-        text_clf = Pipeline([
-            ('vect', CountVectorizer()),
-            ('tfidf', TfidfTransformer()),
-            ('clf', svm.SVC(C = n)),
-        ])
-        text_clf.fit(train, labels)
-        predicted = text_clf.predict(valid)
-        acc = np.mean(predicted == valid_labels)*100
-        return [predicted, acc]
-    ACC = []
-    for n in range(1, cost):
-        jam = svm_text(train, labels, valid, valid_labels, n)[1]
-        ACC.append(jam)    
-    cbest_pred = svm_text(train, labels, valid, valid_labels, ACC.index(max(ACC)) + 1)
-    return cbest_pred   
+def svm_text(train, labels, valid, valid_labels, n = 5):
+    text_clf = Pipeline([
+        ('vect', CountVectorizer()),
+        ('tfidf', TfidfTransformer()),
+        ('clf', svm.SVC(C = n, kernel = "linear")),
+    ])
+    text_clf.fit(train, labels)
+    predicted = text_clf.predict(valid)
+    acc = np.mean(predicted == valid_labels)*100
+    return [predicted, acc] 
+
 
 #Process data       
-J1 = Proc_KNN(dat_train, train_lab, dat_val, val_lab, 10)
-        
-J2 = Proc_SVM(dat_train, train_lab, dat_val, val_lab, 10)   
-        
-        
+N = list(range(1,26))
+
+Res1 = []
+
+Res2 = []
+
+for i in N:
+    Res1.append(knn_text(dat_train, train_lab, dat_val, val_lab, i)[1])
+    
+    Res2.append(svm_text(dat_train, train_lab, dat_val, val_lab, i)[1])
+ 
+Res = pd.DataFrame({"N":N, "KNN":Res1, "SVM":Res2})
+
+#Graph Resultts
+Res.plot(x = "N", y = ["KNN", "SVM"])
+
+#Get process time
+stop = datetime.now()
+
+print("Total time elapsed: ", stop - start)
