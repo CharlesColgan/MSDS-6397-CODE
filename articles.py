@@ -69,6 +69,10 @@ for i in range(len(val_lab)):
         val_lab[i] = 3
 
 #Form Algo
+#comparison of KNN and SVM for total accuracy over data
+
+#KNN classifies by assuming a neighborhood around a data point containing
+#K other data points and classifies by the average class of the contained data
 def knn_text(train, labels, valid, valid_labels, n = 5):                       
     text_clf = Pipeline([
         ('vect', CountVectorizer()),
@@ -80,6 +84,8 @@ def knn_text(train, labels, valid, valid_labels, n = 5):
     acc = np.mean(predicted == valid_labels)*100
     return [predicted, acc]
 
+#SVM classifies by comparing two features and finding a seperator that
+#splits the data into two classes 
 def svm_text(train, labels, valid, valid_labels, n = 5):
     text_clf = Pipeline([
         ('vect', CountVectorizer()),
@@ -108,6 +114,11 @@ Res = pd.DataFrame({"N":N, "KNN":Res1, "SVM":Res2})
 
 #Graph Resultts
 Res.plot(x = "N", y = ["KNN", "SVM"])
+
+#SVM has better out put at all levels than KNN. 
+#However, the scaled parameters are differnet so this may be misleading.
+#SVM likely worked better as a feature by feature comparison will likely find more distinct similarities,
+#Where as KNN will see more data at once and be unable to distinguish
 
 #Get process time
 stop = datetime.now()
