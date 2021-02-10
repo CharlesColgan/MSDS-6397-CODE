@@ -119,6 +119,7 @@ Res.plot(x = "N", y = ["KNN", "SVM"])
 #However, the scaled parameters are differnet so this may be misleading.
 #SVM likely worked better as a feature by feature comparison will likely find more distinct similarities,
 #Where as KNN will see more data at once and be unable to distinguish
+#Total time spent on project: 2-3 hours
 
 #Get process time
 stop = datetime.now()
