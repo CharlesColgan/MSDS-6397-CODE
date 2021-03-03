@@ -10,7 +10,6 @@ Created on Sun Feb  7 19:46:38 2021
 #Libraries
 import numpy as np
 import pandas as pd
-from sklearn.datasets import fetch_20newsgroups
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.neighbors import KNeighborsClassifier
@@ -21,6 +20,9 @@ from datetime import datetime
 start = datetime.now()
 
 #Load Data
+
+#Linguistic Data Consortium's New York Times Annotated Corpus
+
 data_train = open("data_train.txt", "r")
 
 data_valid = open("data_valid.txt", "r")
@@ -69,6 +71,9 @@ for i in range(len(val_lab)):
         val_lab[i] = 3
 
 #Form Algo
+
+#Vectorize and featured by term frequency–inverse document frequency
+
 #comparison of KNN and SVM for total accuracy over data
 
 #KNN classifies by assuming a neighborhood around a data point containing
@@ -86,11 +91,11 @@ def knn_text(train, labels, valid, valid_labels, n = 5):
 
 #SVM classifies by comparing two features and finding a seperator that
 #splits the data into two classes 
-def svm_text(train, labels, valid, valid_labels, n = 5):
+def svm_text(train, labels, valid, valid_labels, n = 0.001):
     text_clf = Pipeline([
         ('vect', CountVectorizer()),
         ('tfidf', TfidfTransformer()),
-        ('clf', svm.SVC(C = n, kernel = "linear")),
+        ('clf', svm.SVC(kernel = "linear", tol = n)),
     ])
     text_clf.fit(train, labels)
     predicted = text_clf.predict(valid)
@@ -103,19 +108,37 @@ N = list(range(1,26))
 
 Res1 = []
 
-Res2 = []
+Res2A = []
+
+Res2B = []
+
+Res2C = []
 
 for i in N:
     Res1.append(knn_text(dat_train, train_lab, dat_val, val_lab, i)[1])
+   
+    Res2A.append(svm_text(dat_train, train_lab, dat_val, val_lab, i)[1])
     
-    Res2.append(svm_text(dat_train, train_lab, dat_val, val_lab, i)[1])
+    f = 1/i
+    
+    Res2B.append(svm_text(dat_train, train_lab, dat_val, val_lab, f)[1])
+    
+    g = np.linspace(1, 2, num = 25)[i-1]
+    
+    Res2C.append(svm_text(dat_train, train_lab, dat_val, val_lab, g)[1])
  
-Res = pd.DataFrame({"N":N, "KNN":Res1, "SVM":Res2})
+ResA = pd.DataFrame({"N":N, "KNN":Res1, "SVM":Res2A})
+ResB = pd.DataFrame({"N":N, "KNN":Res1, "SVM":Res2B})
+ResC = pd.DataFrame({"N":N, "KNN":Res1, "SVM":Res2C})
 
-#Graph Resultts
-Res.plot(x = "N", y = ["KNN", "SVM"])
+#Graph Results
+ResA.plot(x = "N", y = ["KNN", "SVM"])
 
-#SVM has better out put at all levels than KNN. 
+ResB.plot(x = "N", y = ["KNN", "SVM"])
+
+ResC.plot(x = "N", y = ["KNN", "SVM"])
+
+#SVM has better out put at all levels than KNN for the respectible scales of each. 
 #However, the scaled parameters are differnet so this may be misleading.
 #SVM likely worked better as a feature by feature comparison will likely find more distinct similarities,
 #Where as KNN will see more data at once and be unable to distinguish
@@ -123,4 +146,5 @@ Res.plot(x = "N", y = ["KNN", "SVM"])
 #Get process time
 stop = datetime.now()
 
+print()
 print("Total time elapsed: ", stop - start)
